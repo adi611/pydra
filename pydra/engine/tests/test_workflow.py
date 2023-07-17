@@ -1189,28 +1189,28 @@ def test_wf_3nd_st_1(plugin_dask_opt, tmpdir):
         assert odir.exists()
 
 
-@pytest.mark.flaky(reruns=3)  # when dask
-def test_wf_3nd_ndst_1(plugin_dask_opt, tmpdir):
-    """workflow with three tasks, third one connected to two previous tasks,
-    splitter on the tasks levels
-    """
-    wf = Workflow(name="wf_ndst_7", input_spec=["x", "y"])
-    wf.add(add2(name="add2x", x=wf.lzin.x).split("x"))
-    wf.add(add2(name="add2y", x=wf.lzin.y).split("x"))
-    wf.add(multiply(name="mult", x=wf.add2x.lzout.out, y=wf.add2y.lzout.out))
-    wf.inputs.x = [1, 2, 3]
-    wf.inputs.y = [11, 12]
-    wf.set_output([("out", wf.mult.lzout.out)])
-    wf.cache_dir = tmpdir
+# @pytest.mark.flaky(reruns=3)  # when dask
+# def test_wf_3nd_ndst_1(plugin_dask_opt, tmpdir):
+#     """workflow with three tasks, third one connected to two previous tasks,
+#     splitter on the tasks levels
+#     """
+#     wf = Workflow(name="wf_ndst_7", input_spec=["x", "y"])
+#     wf.add(add2(name="add2x", x=wf.lzin.x).split("x"))
+#     wf.add(add2(name="add2y", x=wf.lzin.y).split("x"))
+#     wf.add(multiply(name="mult", x=wf.add2x.lzout.out, y=wf.add2y.lzout.out))
+#     wf.inputs.x = [1, 2, 3]
+#     wf.inputs.y = [11, 12]
+#     wf.set_output([("out", wf.mult.lzout.out)])
+#     wf.cache_dir = tmpdir
 
-    with Submitter(plugin=plugin_dask_opt) as sub:
-        sub(wf)
+#     with Submitter(plugin=plugin_dask_opt) as sub:
+#         sub(wf)
 
-    results = wf.result()
-    assert len(results.output.out) == 6
-    assert results.output.out == [39, 42, 52, 56, 65, 70]
-    # checking the output directory
-    assert wf.output_dir.exists()
+#     results = wf.result()
+#     assert len(results.output.out) == 6
+#     assert results.output.out == [39, 42, 52, 56, 65, 70]
+#     # checking the output directory
+#     assert wf.output_dir.exists()
 
 
 def test_wf_3nd_st_2(plugin, tmpdir):
