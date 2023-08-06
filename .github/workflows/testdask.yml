@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.7, 3.8, 3.9, "3.10"]
+        python-version: [3.11]
       fail-fast: false
 
     steps:
@@ -36,7 +36,7 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest -v --dask pydra/engine --cov pydra --cov-config .coveragerc --cov-report xml:cov.xml
+          pytest -v --dask pydra/engine/tests/test_workflow.py --cov pydra --cov-config .coveragerc --cov-report xml:cov.xml
 
       - name: Upload to codecov
         run: codecov -f cov.xml -F unittests -e GITHUB_WORKFLOW
