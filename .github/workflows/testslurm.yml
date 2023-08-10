@@ -24,7 +24,8 @@ jobs:
     - name: Setup SLURM
       run: |
         docker exec slurm bash -c "apt-get update && apt-get install -y slurmd slurmctld slurmdbd"
-        docker exec slurm bash -c "slurmctld && slurmd && slurmdbd"
+        docker exec slurm bash -c "slurmctld && slurmd"
+        docker exec slurm bash -c "echo -e '[slurmdbd]\nStorageType=accounting_storage/slurmdbd' > /etc/slurm/slurmdbd.conf"
         docker exec slurm bash -c "sacctmgr -i add account none,test Cluster=linux Description='none' Organization='none'"
     - name: Setup Python and run tests
       run: |
