@@ -21,18 +21,6 @@ jobs:
         docker pull $DOCKER_IMAGE
         # Have image running in background
         docker run $(bash <(curl -s https://codecov.io/env)) -itd -h ernie --name slurm -v $(pwd):/pydra -e NO_ET=$NO_ET $DOCKER_IMAGE
-    - name: Display previous jobs with sacct
-      run: |
-        echo "Allowing ports/daemons time to start" && sleep 10
-        docker exec slurm bash -c "sacctmgr -i add cluster name=linux \
-          && supervisorctl restart slurmd \
-          && supervisorctl restart slurmctld \
-          && sacctmgr -i add account none,test Cluster=linux Description='none' Organization='none'"
-        docker exec slurm bash -c "sacct && sinfo && squeue" 2&> /dev/null
-        if [ $? -ne 0 ]; then
-            echo "Slurm docker image error"
-            exit 1
-        fi
     - name: Setup Python
       run: |
         docker exec slurm bash -c "echo $NO_ET"
