@@ -21,6 +21,9 @@ jobs:
         docker pull $DOCKER_IMAGE
         # Have image running in the background
         docker run $(bash <(curl -s https://codecov.io/env)) -itd -h ernie --name slurm -v $(pwd):/pydra -e NO_ET=$NO_ET $DOCKER_IMAGE
+    - name: Install slurmctld
+      run: |
+        docker exec slurm bash -c "apt-get update && apt-get install -y slurmctld"
     - name: Display previous jobs with sacct
       run: |
         echo "Allowing ports/daemons time to start" && sleep 10
