@@ -25,7 +25,7 @@ jobs:
       run: |
         echo "Allowing ports/daemons time to start" && sleep 10
         docker exec slurm bash -c "sacctmgr -i add cluster name=linux \
-          && supervisorctl restart slurmdbd \
+          && supervisorctl restart slurmd \
           && supervisorctl restart slurmctld \
           && sacctmgr -i add account none,test Cluster=linux Description='none' Organization='none'"
         docker exec slurm bash -c "sacct && sinfo && squeue" 2&> /dev/null
