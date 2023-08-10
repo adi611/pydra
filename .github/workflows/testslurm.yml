@@ -13,19 +13,23 @@ jobs:
       DOCKER_IMAGE: hongminc1/slurm_container_python_11:latest
 
     steps:
-    - name: Disable etelemetry
+    - name: Disable telemetry
       run: echo "NO_ET=TRUE" >> $GITHUB_ENV
     - uses: actions/checkout@v2
     - name: Pull docker image
       run: |
         docker pull $DOCKER_IMAGE
-        # Have image running in background
+        # Have image running in the background
         docker run $(bash <(curl -s https://codecov.io/env)) -itd -h ernie --name slurm -v $(pwd):/pydra -e NO_ET=$NO_ET $DOCKER_IMAGE
-    - name: Setup Python
+    - name: Setup Python and SLURM
       run: |
         docker exec slurm bash -c "echo $NO_ET"
         docker exec slurm bash -c "ls -la && echo list top level dir"
         docker exec slurm bash -c "ls -la /pydra && echo list pydra dir"
+        docker exec slurm bash -c "yum install -y epel-release && yum install -y slurm slurmd slurmctld"
+        docker exec slurm bash -c "systemctl start slurmctld"
+        docker exec slurm bash -c "systemctl start slurmd"
+        docker exec slurm bash -c "scontrol update nodename=ga state=idle"  # Update node state to idle
         docker exec slurm bash -c "pip install --upgrade pip && pip install -e /pydra[test] && python -c 'import pydra; print(pydra.__version__)'"
     - name: Run pytest
       run: docker exec slurm bash -c "pytest --color=yes -vs -n auto --cov pydra --cov-config /pydra/.coveragerc --cov-report xml:/pydra/cov.xml --doctest-modules /pydra/pydra"
