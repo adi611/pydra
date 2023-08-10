@@ -24,17 +24,16 @@ jobs:
     # - name: Install slurmctld
     #   run: |
     #     docker exec slurm bash -c "yum install -y slurm slurmctld"
-    # - name: Display previous jobs with sacct
-    #   run: |
-    #     echo "Allowing ports/daemons time to start" && sleep 10
-    #     docker exec slurm bash -c "sacctmgr -i add cluster name=linux \
-    #       && supervisorctl restart slurmdbd \
-    #       && sacctmgr -i add account none,test Cluster=linux Description='none' Organization='none'"
-    #     docker exec slurm bash -c "sacct && sinfo && squeue" 2&> /dev/null
-    #     if [ $? -ne 0 ]; then
-    #         echo "Slurm Docker image error"
-    #         exit 1
-    #     fi
+    - name: Display previous jobs with sacct
+      run: |
+        echo "Allowing ports/daemons time to start" && sleep 10
+        docker exec slurm bash -c "sacctmgr -i add cluster name=linux \
+          && sacctmgr -i add account none,test Cluster=linux Description='none' Organization='none'"
+        docker exec slurm bash -c "sacct && sinfo && squeue" 2&> /dev/null
+        if [ $? -ne 0 ]; then
+            echo "Slurm Docker image error"
+            exit 1
+        fi
     - name: Setup Python
       run: |
         docker exec slurm bash -c "echo $NO_ET"
