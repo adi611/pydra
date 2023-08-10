@@ -15,29 +15,29 @@ jobs:
     steps:
     - name: Disable telemetry
       run: echo "NO_ET=TRUE" >> $GITHUB_ENV
-    - uses: actions/checkout@v3
-    - name: Pull Docker image
+    - uses: actions/checkout@v2
+    - name: Pull docker image
       run: |
         docker pull $DOCKER_IMAGE
         # Have image running in the background
-        docker run $(bash <(curl -s https://codecov.io/env)) -itd -h ernie --name slurm -v $(pwd):/pydra -e NO_ET=$NO_ET $DOCKER_IMAGE
-    # - name: Install slurmctld
-    #   run: |
-    #     docker exec slurm bash -c "yum install -y slurm slurmctld"
-    - name: Display previous jobs with sacct
+        docker run -itd --privileged --name slurm $DOCKER_IMAGE
+    - name: Setup SLURM
       run: |
-        echo "Allowing ports/daemons time to start" && sleep 10
-        docker exec slurm bash -c "sacctmgr -i add cluster name=linux \
-          && sacctmgr -i add account none,test Cluster=linux Description='none' Organization='none'"
-    - name: Setup Python
+        docker exec slurm bash -c "yum install -y epel-release"
+        docker exec slurm bash -c "yum install -y slurm"
+        docker exec slurm bash -c "systemctl enable slurmd && systemctl enable slurmctld && systemctl start slurmd && systemctl start slurmctld"
+        docker exec slurm bash -c "echo -e '[slurmdbd]\nStorageType=accounting_storage/slurmdbd' > /etc/slurm/slurmdbd.conf"
+        docker exec slurm bash -c "sacctmgr -i add account none,test Cluster=linux Description='none' Organization='none'"
+    - name: Install Python 3 and pip
+      run: |
+        docker exec slurm bash -c "yum install -y python3 python3-pip"
+    - name: Setup Python and run tests
       run: |
         docker exec slurm bash -c "echo $NO_ET"
-        docker exec slurm bash -c "pip install --upgrade pip"
         docker exec slurm bash -c "ls -la && echo list top level dir"
         docker exec slurm bash -c "ls -la /pydra && echo list pydra dir"
-        docker exec slurm bash -c "pip install -e /pydra[test] && python -c 'import pydra; print(pydra.__version__)'"
-    - name: Run pytest
-      run: docker exec slurm bash -c "pytest --color=yes -vs -n auto --cov pydra --cov-config /pydra/.coveragerc --cov-report xml:/pydra/cov.xml --doctest-modules /pydra/pydra"
+        docker exec slurm bash -c "pip3 install --upgrade pip && pip3 install -e /pydra[test] && python3 -c 'import pydra; print(pydra.__version__)'"
+        docker exec slurm bash -c "pytest --color=yes -vs -n auto --cov pydra --cov-config /pydra/.coveragerc --cov-report xml:/pydra/cov.xml --doctest-modules /pydra/pydra"
     - name: Upload to codecov
       run: |
         docker exec slurm bash -c "codecov --root /pydra -f /pydra/cov.xml -F unittests"
