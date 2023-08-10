@@ -23,8 +23,8 @@ jobs:
         docker run $(bash <(curl -s https://codecov.io/env)) -itd -h ernie --name slurm -v $(pwd):/pydra -e NO_ET=$NO_ET $DOCKER_IMAGE
     - name: Setup SLURM
       run: |
-        docker exec slurm bash -c "apt-get update && apt-get install -y slurmd slurmctld"
-        docker exec slurm bash -c "slurmctld && slurmd"
+        docker exec slurm bash -c "apt-get update && apt-get install -y slurmd slurmctld slurmdbd"
+        docker exec slurm bash -c "slurmctld && slurmd && slurmdbd"
         docker exec slurm bash -c "sacctmgr -i add account none,test Cluster=linux Description='none' Organization='none'"
     - name: Setup Python and run tests
       run: |
