@@ -20,7 +20,7 @@ jobs:
       run: |
         docker pull $DOCKER_IMAGE
         # Have image running in the background
-        docker run `bash <(curl -s https://codecov.io/env)` -itd -h slurmct --name slurm -v `pwd`:/pydra -e NO_ET=$NO_ET $DOCKER_IMAGE
+        docker run `bash <(curl -s https://codecov.io/env)` -itd -h slurmctl --name slurm -v `pwd`:/pydra -e NO_ET=$NO_ET $DOCKER_IMAGE
     - name: Display previous jobs with sacct
       run: |
         echo "Allowing ports/daemons time to start" && sleep 10
