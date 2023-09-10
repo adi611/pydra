@@ -27,7 +27,6 @@ jobs:
         docker exec slurm bash -c "sacctmgr -i add cluster name=linux \
           && supervisorctl restart slurmdbd \
           && supervisorctl restart slurmctld \
-          && sacctmgr -i add account none,test Cluster=linux Description='none' Organization='none'"
         docker exec slurm bash -c "sacct && sinfo && squeue" 2&> /dev/null
         if [ $? -ne 0 ]; then
             echo "Slurm docker image error"
