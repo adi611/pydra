@@ -11,6 +11,7 @@ jobs:
     strategy:
       matrix:
         python-version: [3.8.16, 3.9.16, 3.10.9, 3.11.1]
+      fail-fast: false
     runs-on: ubuntu-latest
     env:
       DOCKER_IMAGE: adi611/docker-centos7-slurm:23.02.1
