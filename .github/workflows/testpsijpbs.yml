@@ -10,21 +10,27 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    services:
-      pbspro-container:
-        image: pbspro/pbspro
-        options: --name pbs -e PBS_START_MOM=1
+    container:
+      image: pbspro/pbspro
+      options: --name pbs -h pbs -e PBS_START_MOM=1
 
     steps:
       - name: Check out code
         uses: actions/checkout@v4
 
       - name: Run PBS Pro Container
+        run: docker exec -it pbs bash
+
+      - name: Configure PBS Pro
         run: |
-          # Commands run directly within the service container
-          qmgr -c "create node pbs"
-          qmgr -c "set node pbs queue=workq"
-          su pbsuser
-          cd
-          qsub -- /bin/sleep 10
-          qstat
+          docker exec -it pbs qmgr -c "create node pbs"
+          docker exec -it pbs qmgr -c "set node pbs queue=workq"
+
+      - name: Submit a Job
+        run: |
+          docker exec -it pbs su pbsuser
+          docker exec -it pbs cd
+          docker exec -it pbs qsub -- /bin/sleep 10
+
+      - name: View Job Status
+        run: docker exec -it pbs qstat
