@@ -1,0 +1,30 @@
+name: PBS Pro Container Workflow
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      pbspro-container:
+        image: pbspro/pbspro
+        options: --name pbs -e PBS_START_MOM=1
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Run PBS Pro Container
+        run: |
+          # Commands run directly within the service container
+          qmgr -c "create node pbs"
+          qmgr -c "set node pbs queue=workq"
+          su pbsuser
+          cd
+          qsub -- /bin/sleep 10
+          qstat
