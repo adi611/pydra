@@ -22,8 +22,8 @@ jobs:
       - name: Run PBS Pro Container
         run: |
           bash
-          qmgr -c "create node pbs"
-          qmgr -c "set node pbs queue=workq"
+          bash qmgr -c "create node pbs"
+          bash qmgr -c "set node pbs queue=workq"
           su - pbsuser
           qsub -- /bin/sleep 10
           qstat
