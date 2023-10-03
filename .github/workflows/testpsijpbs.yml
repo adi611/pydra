@@ -23,8 +23,8 @@ jobs:
         run: |
           # Commands run directly within the service container
           export PATH=$PWD/bin:$PATH
-          qmgr -c "create node pbs"
-          qmgr -c "set node pbs queue=workq"
+          bash -c 'qmgr -c "create node pbs"'
+          bash -c 'qmgr -c "set node pbs queue=workq"'
           su - pbsuser
           qsub -- /bin/sleep 10
           qstat
