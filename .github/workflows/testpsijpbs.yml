@@ -10,7 +10,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    container:
+    services:
+      pbspro-container:
         image: pbspro/pbspro
         options: --name pbs -e PBS_START_MOM=1
 
