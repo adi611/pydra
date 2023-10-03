@@ -12,7 +12,7 @@ jobs:
 
     container:
         image: pbspro/pbspro
-        options: --name pbs -h pbs -e PBS_START_MOM=1 bash
+        options: --name pbs -h pbs -e PBS_START_MOM=1
 
     steps:
       - name: Check out code
