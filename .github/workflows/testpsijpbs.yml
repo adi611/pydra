@@ -13,7 +13,7 @@ jobs:
     services:
       pbspro-container:
         image: pbspro/pbspro
-        options: --name pbs -h pbs -e PBS_START_MOM=1 -it --init --platform=linux/amd64 --user root
+        options: --name pbs -h pbs -e PBS_START_MOM=1 -itd --init --platform=linux/amd64 --user root
 
     steps:
       - name: Check out code
