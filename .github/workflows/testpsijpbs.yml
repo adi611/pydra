@@ -23,7 +23,7 @@ jobs:
 
       - name: Run PBS Pro Container
         run: |
-          docker exec -it pbspro-container bash
+          docker exec -it pbs bash
 
       - name: Configure PBS Pro
         run: |
