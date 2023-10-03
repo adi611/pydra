@@ -13,7 +13,7 @@ jobs:
     services:
       pbspro-container:
         image: pbspro/pbspro
-        options: --name pbs -e PBS_START_MOM=1
+        options: --name pbs -e PBS_START_MOM=1 bash
 
     steps:
       - name: Check out code
@@ -21,8 +21,8 @@ jobs:
 
       - name: Run PBS Pro Container
         run: |
-          bash qmgr -c "create node pbs"
-          bash qmgr -c "set node pbs queue=workq"
+          qmgr -c "create node pbs"
+          qmgr -c "set node pbs queue=workq"
           su - pbsuser
           qsub -- /bin/sleep 10
           qstat
