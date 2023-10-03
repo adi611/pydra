@@ -13,7 +13,7 @@ jobs:
     services:
       pbspro-container:
         image: pbspro/pbspro
-        options: --name pbs -h pbs -e PBS_START_MOM=1 bash
+        options: --name pbs -h pbs -e PBS_START_MOM=1 -it --init bash
 
     steps:
       - name: Check out code
