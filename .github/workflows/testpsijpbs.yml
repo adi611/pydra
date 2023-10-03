@@ -18,6 +18,7 @@ jobs:
       run: |
         docker run -d --name pbs -h pbs -e PBS_START_MOM=1 pbspro/pbspro bash
         # Wait for the container to start
+        export PATH=$PWD/bin:$PATH
         timeout 30s bash -c 'until docker exec pbs qmgr -c "list node"; do sleep 1; done'
 
     - name: Configure PBS Pro
