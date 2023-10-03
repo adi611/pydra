@@ -25,8 +25,8 @@ jobs:
           export PATH=$PWD/bin:$PATH
           pwd
           ls
-          bash -c 'qmgr -c "create node pbs"'
-          bash -c 'qmgr -c "set node pbs queue=workq"'
+          qmgr -c "create node pbs"
+          qmgr -c "set node pbs queue=workq"
           su - pbsuser
           qsub -- /bin/sleep 10
           qstat
