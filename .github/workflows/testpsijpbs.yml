@@ -21,7 +21,6 @@ jobs:
 
       - name: Run PBS Pro Container
         run: |
-          bash
           bash qmgr -c "create node pbs"
           bash qmgr -c "set node pbs queue=workq"
           su - pbsuser
