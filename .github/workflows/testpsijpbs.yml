@@ -1,4 +1,4 @@
-name: PBS Pro Workflow
+name: PBS Pro Container Workflow
 
 on:
   push:
@@ -10,30 +10,28 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    services:
+      pbspro-container:
+        image: pbspro/pbspro
+        options: --name pbs -h pbs -e PBS_START_MOM=1 -it --init
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Check out code
+        uses: actions/checkout@v4
 
-    - name: Start PBS Pro container
-      run: |
-        docker run -itd --name pbs -h pbs -e PBS_START_MOM=1 pbspro/pbspro bash
-      continue-on-error: true
-
-    - name: Configure PBS Pro
-      run: |
-        docker exec -it pbs qmgr -c "create node pbs"
-        docker exec -it pbs qmgr -c "set node pbs queue=workq"
-
-    - name: Switch to pbsuser
-      run: |
-        docker exec -it pbs su - pbsuser
-
-    - name: Submit a job
-      run: |
-        docker exec -it pbs qsub -- /bin/sleep 10
-        docker exec -it pbs qstat
-
-    - name: Stop and remove PBS Pro container
-      run: |
-        docker stop pbs
-        docker rm pbs
+      - name: Run PBS Pro Container
+        run: |
+          # Commands run directly within the service container
+          export PATH=$PWD/bin:$PATH
+          pwd
+          ls
+      - name: bash
+        run: |
+          bash
+      - name: steps
+        run: |
+          qmgr -c "create node pbs"
+          qmgr -c "set node pbs queue=workq"
+          su - pbsuser
+          qsub -- /bin/sleep 10
+          qstat
