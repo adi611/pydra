@@ -1,4 +1,4 @@
-name: PBS Pro Container Workflow
+name: Install PBS
 
 on:
   push:
@@ -7,31 +7,61 @@ on:
   pull_request:
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    services:
-      pbspro-container:
-        image: pbspro/pbspro
-        options: --name pbs -h pbs -e PBS_START_MOM=1 -it --init
-
+  install-pbs:
+    runs-on: ubuntu-latest # You can choose the OS you prefer
     steps:
-      - name: Check out code
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      - name: Run PBS Pro Container
+      - name: Install dependencies
         run: |
-          # Commands run directly within the service container
-          export PATH=$PWD/bin:$PATH
-          pwd
-          ls
-      - name: bash
+          sudo apt update
+          sudo apt install -y gcc make libtool libhwloc-dev libx11-dev \
+            libxt-dev libedit-dev libical-dev ncurses-dev perl \
+            postgresql-server-dev-all postgresql-contrib python3-dev tcl-dev tk-dev swig \
+            libexpat-dev libssl-dev libxext-dev libxft-dev autoconf automake g++
+
+      - name: Download and extract OpenPBS
         run: |
-          bash
-      - name: steps
+          wget https://github.com/openpbs/openpbs/archive/refs/tags/v20.0.0.tar.gz
+          tar -xpvf v20.0.0.tar.gz
+          cd openpbs-20.0.0
+
+      - name: Generate configure script and Makefiles
         run: |
-          qmgr -c "create node pbs"
-          qmgr -c "set node pbs queue=workq"
-          su - pbsuser
-          qsub -- /bin/sleep 10
-          qstat
+          ./autogen.sh
+
+      - name: Configure PBS
+        run: |
+          ./configure --prefix=/opt/pbs # Adjust the configuration options as needed
+
+      - name: Build PBS
+        run: |
+          make
+
+      - name: Install PBS
+        run: |
+          sudo make install
+
+      - name: Configure PBS post-install
+        run: |
+          sudo /opt/pbs/libexec/pbs_postinstall
+
+      - name: Configure sudo permissions
+        run: |
+          echo "adi611 ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers.d/adi611
+          sudo chmod 4755 /opt/pbs/sbin/pbs_iff /opt/pbs/sbin/pbs_rcp
+
+      - name: Start PBS services
+        run: |
+          sudo /etc/init.d/pbs start
+
+      - name: Configure environment variables
+        run: |
+          echo '. /etc/profile.d/pbs.sh' >> ~/.bashrc # Adjust this for your shell
+          source ~/.bashrc
+
+      - name: Verify PBS installation
+        run: |
+          qstat -B
+          pbsnodes -a
