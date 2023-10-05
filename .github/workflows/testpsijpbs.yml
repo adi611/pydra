@@ -17,7 +17,7 @@ jobs:
       - name: Install Packages
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc make libtool libhwloc-dev libx11-dev libxt-dev libedit-dev libical-dev ncurses-dev perl python-dev tcl-dev tk-dev swig libexpat-dev libssl-dev libxext-dev libxft-dev autoconf automake expat libedit2 python sendmail-bin sudo tcl tk
+          sudo apt-get install -y gcc make libtool libhwloc-dev libx11-dev libxt-dev libedit-dev libical-dev ncurses-dev perl tcl-dev tk-dev swig libexpat-dev libssl-dev libxext-dev libxft-dev autoconf automake expat libedit2 sendmail-bin sudo tcl tk
 
       - name: Install PostgreSQL
         run: |
