@@ -38,8 +38,7 @@ jobs:
       - name: Download and Install OpenPBS
         run: |
           python -V
-          export PATH="/opt/hostedtoolcache/Python/3.8.18/x64/include/python3.8/:$PATH"
-          export PATH="/usr/include/python3.8/:$PATH"
+          export LDFLAGS="-Wl,--copy-dt-needed-entries"
           C_INCLUDE_PATH="/usr/include/python3.8/:$PATH"
           export C_INCLUDE_PATH
           CPLUS_INCLUDE_PATH="/usr/include/python3.8/:$PATH"
