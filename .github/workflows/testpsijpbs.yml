@@ -23,42 +23,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y gcc make libtool libhwloc-dev libx11-dev libxt-dev libedit-dev libical-dev ncurses-dev perl tcl-dev tk-dev swig libexpat-dev libssl-dev libxext-dev libxft-dev autoconf automake expat libedit2 sendmail-bin sudo tcl tk mlocate python-dev python3-dev libpython3.8-dev
-      - name: Install PostgreSQL
-        run: |
-          sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-          wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-          sudo apt-get update
-          sudo apt-get -y install postgresql
+      
       - name: Install PostgreSQL Dependencies
         run: |
-          sudo apt-get install -y postgresql-server-dev-all postgresql-contrib
+          locate Python.h
 
-      - name: Install dependencies
-        run: |
-          pip install -e ".[test,psij]"
-
-      - name: Download and Install OpenPBS
-        run: |
-          python -V
-          sudo apt-get update
-          sudo apt-get install python3.8-dev build-essential
-          mkdir -p ~/Downloads
-          cd ~/Downloads/
-          sudo wget https://github.com/openpbs/openpbs/archive/refs/tags/v23.06.06.tar.gz
-          tar -xpvf v23.06.06.tar.gz
-          cd openpbs-23.06.06/
-          ./autogen.sh
-          ./configure --prefix=/opt/pbs
-          make
-          sudo make install
-          sudo /opt/pbs/libexec/pbs_postinstall
-          sudo chmod 4755 /opt/pbs/sbin/pbs_iff /opt/pbs/sbin/pbs_rcp
-          sudo /etc/init.d/pbs start
-          . /etc/profile.d/pbs.sh
-          qstat -B
-          pytest -v --psij=pbspro pydra/engine --cov pydra --cov-config .coveragerc --cov-report xml:cov.xml
-      - name: Test OpenPBS
-        run: |
-          qstat -B
-          echo "sleep 60" | qsub
-          qstat -a
