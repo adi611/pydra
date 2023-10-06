@@ -21,5 +21,5 @@ jobs:
 
       - name: Locate
         run: |
-          sudo apt-get update && sudo apt-get install locate
+          sudo apt-get update && sudo apt-get install mlocate && sudo updatedb
           locate libpython3.7m
