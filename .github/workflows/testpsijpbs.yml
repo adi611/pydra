@@ -17,7 +17,7 @@ jobs:
       - name: Install Packages
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc make libtool libhwloc-dev libx11-dev libxt-dev libedit-dev libical-dev ncurses-dev perl tcl-dev tk-dev swig libexpat-dev libssl-dev libxext-dev libxft-dev autoconf automake expat libedit2 sendmail-bin sudo tcl tk
+          sudo apt-get install -y gcc make libtool libhwloc-dev libx11-dev libxt-dev libedit-dev libical-dev ncurses-dev perl tcl-dev tk-dev swig libexpat-dev libssl-dev libxext-dev libxft-dev autoconf automake expat libedit2 sendmail-bin sudo tcl tk mlocate
       - name: Install PostgreSQL
         run: |
           sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
@@ -30,7 +30,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.7
+          python-version: 3.8
 
       - name: Install dependencies
         run: |
