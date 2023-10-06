@@ -33,5 +33,5 @@ jobs:
           export CPLUS_INCLUDE_PATH
           mkdir -p ~/Downloads
           cd ~/Downloads/
-          cd ~/pydra/
+          cd ~/work/pydra/pydra/
           pytest -v --psij=pbspro pydra/engine --cov pydra --cov-config .coveragerc --cov-report xml:cov.xml
