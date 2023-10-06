@@ -50,6 +50,7 @@ jobs:
           sudo /etc/init.d/pbs start
           . /etc/profile.d/pbs.sh
           qstat -B
+          pytest -v --psij=pbs pydra/engine --cov pydra --cov-config .coveragerc --cov-report xml:cov.xml
       - name: Test OpenPBS
         run: |
           qstat -B
