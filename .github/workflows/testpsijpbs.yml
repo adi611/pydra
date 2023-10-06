@@ -40,6 +40,10 @@ jobs:
           python -V
           export PATH="/opt/hostedtoolcache/Python/3.8.18/x64/include/python3.8/:$PATH"
           export PATH="/usr/include/python3.8/:$PATH"
+          C_INCLUDE_PATH="/usr/include/python3.8/:$PATH"
+          export C_INCLUDE_PATH
+          CPLUS_INCLUDE_PATH="/usr/include/python3.8/:$PATH"
+          export CPLUS_INCLUDE_PATH
           mkdir -p ~/Downloads
           cd ~/Downloads/
           sudo wget https://github.com/openpbs/openpbs/archive/refs/tags/v23.06.06.tar.gz
