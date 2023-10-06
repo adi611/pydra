@@ -14,10 +14,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+
       - name: Install Packages
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc make libtool libhwloc-dev libx11-dev libxt-dev libedit-dev libical-dev ncurses-dev perl tcl-dev tk-dev swig libexpat-dev libssl-dev libxext-dev libxft-dev autoconf automake expat libedit2 sendmail-bin sudo tcl tk mlocate
+          sudo apt-get install -y gcc make libtool libhwloc-dev libx11-dev libxt-dev libedit-dev libical-dev ncurses-dev perl tcl-dev tk-dev swig libexpat-dev libssl-dev libxext-dev libxft-dev autoconf automake expat libedit2 sendmail-bin sudo tcl tk mlocate python-dev python3-dev libpython3.8-dev
       - name: Install PostgreSQL
         run: |
           sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
@@ -27,10 +32,6 @@ jobs:
       - name: Install PostgreSQL Dependencies
         run: |
           sudo apt-get install -y postgresql-server-dev-all postgresql-contrib
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.8
 
       - name: Install dependencies
         run: |
@@ -41,7 +42,6 @@ jobs:
           python -V
           mkdir -p ~/Downloads
           cd ~/Downloads/
-          sudo ldconfig /opt/hostedtoolcache/Python/3.7.17/x64/lib/
           sudo wget https://github.com/openpbs/openpbs/archive/refs/tags/v23.06.06.tar.gz
           tar -xpvf v23.06.06.tar.gz
           cd openpbs-23.06.06/
