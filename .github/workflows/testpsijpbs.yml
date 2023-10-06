@@ -29,6 +29,9 @@ jobs:
           wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
           sudo apt-get update
           sudo apt-get -y install postgresql
+      - name: Install dependencies
+        run: |
+          pip install -e ".[test,psij]"
       - name: Install PostgreSQL Dependencies
         run: |
           sudo apt-get install -y postgresql-server-dev-all postgresql-contrib
@@ -54,6 +57,7 @@ jobs:
           sudo /etc/init.d/pbs start
           . /etc/profile.d/pbs.sh
           qstat -B
+          pytest -v --psij=pbspro pydra/engine --cov pydra --cov-config .coveragerc --cov-report xml:cov.xml
       - name: Test OpenPBS
         run: |
           qstat -B
