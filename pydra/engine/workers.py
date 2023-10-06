@@ -913,7 +913,7 @@ class PsijWorker(Worker):
         self.psij = psij
 
         # Check if the provided subtype is valid
-        valid_subtypes = ["local", "slurm", "pbs"]
+        valid_subtypes = ["local", "slurm", "pbspro"]
         if subtype not in valid_subtypes:
             raise ValueError(
                 f"Invalid 'subtype' provided. Available options: {', '.join(valid_subtypes)}"
@@ -1044,6 +1044,6 @@ WORKERS = {
     "sge": SGEWorker,
     **{
         "psij-" + subtype: lambda subtype=subtype: PsijWorker(subtype=subtype)
-        for subtype in ["local", "slurm", "pbs"]
+        for subtype in ["local", "slurm", "pbspro"]
     },
 }

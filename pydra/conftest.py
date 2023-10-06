@@ -11,7 +11,7 @@ def pytest_addoption(parser):
         "--psij",
         action="store",
         help="run with psij subtype plugin",
-        choices=["local", "slurm", "pbs"],
+        choices=["local", "slurm", "pbspro"],
     )
 
 
