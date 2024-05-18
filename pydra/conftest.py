@@ -40,17 +40,27 @@ def pytest_generate_tests(metafunc):
         metafunc.parametrize("plugin_dask_opt", Plugins)
 
     if "plugin" in metafunc.fixturenames:
-        use_dask = False
-        try:
-            use_dask = metafunc.config.getoption("dask")
-        except ValueError:
-            pass
-        if use_dask:
-            Plugins = []
-        elif bool(shutil.which("sbatch")):
+        # use_dask = False
+        # try:
+        #     use_dask = metafunc.config.getoption("dask")
+        # except ValueError:
+        #     pass
+        # if use_dask:
+        #     Plugins = []
+        # elif bool(shutil.which("sbatch")):
+        #     Plugins = ["slurm"]
+        # else:
+        #     Plugins = ["cf"]
+        if bool(shutil.which("sbatch")):
             Plugins = ["slurm"]
         else:
             Plugins = ["cf"]
+        try:
+            if metafunc.config.getoption("dask"):
+                Plugins.append("dask")
+        except ValueError:
+            # Called as --pyargs, so --dask isn't available
+            pass
         try:
             if metafunc.config.getoption("psij"):
                 Plugins.append("psij-" + metafunc.config.getoption("psij"))
