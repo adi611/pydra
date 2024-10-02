@@ -44,7 +44,7 @@ from pydra.utils import exc_info_matches
 def test_example_workflow_with_dashboard(plugin, tmpdir):
     @mark.task
     def add_two(x):
-        time.sleep(5)
+        time.sleep(10)
         return x + 2
 
     @mark.task
