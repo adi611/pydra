@@ -31,6 +31,8 @@ class Submitter:
             Additional keyword arguments to pass to the worker.
 
         """
+        dashboard = kwargs.pop("dashboard", None)
+        self.dashboard = dashboard
         self.loop = get_open_loop()
         self._own_loop = not self.loop.is_running()
         if isinstance(plugin, str):
@@ -52,11 +54,17 @@ class Submitter:
         """Submitter run function."""
         if cache_locations is not None:
             runnable.cache_locations = cache_locations
-        self.loop.run_until_complete(
-            self.submit_from_call(runnable, rerun, environment)
-        )
-        PersistentCache().clean_up()
-        return runnable.result()
+        if self.dashboard:
+            self.dashboard.start(runnable)
+        try:
+            self.loop.run_until_complete(
+                self.submit_from_call(runnable, rerun, environment)
+            )
+            PersistentCache().clean_up()
+            return runnable.result()
+        finally:
+            if self.dashboard:
+                self.dashboard.stop()
 
     async def submit_from_call(self, runnable, rerun, environment):
         """
@@ -234,6 +242,9 @@ class Submitter:
                             )
                         raise RuntimeError(msg)
             for task in tasks:
+                if self.dashboard:
+                    self.dashboard.update(task)
+
                 # grab inputs if needed
                 logger.debug(f"Retrieving inputs for {task}")
                 # TODO: add state idx to retrieve values to reduce waiting
@@ -247,6 +258,10 @@ class Submitter:
                 # single task
                 else:
                     task_futures.add(self.worker.run_el(task, rerun=rerun))
+                
+                if self.dashboard:
+                    self.dashboard.update(task)
+
             task_futures = await self.worker.fetch_finished(task_futures)
             tasks, follow_err = get_runnable_tasks(graph_copy)
             # updating tasks_errored
