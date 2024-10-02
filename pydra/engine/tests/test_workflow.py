@@ -39,6 +39,49 @@ from ... import mark
 from ..specs import SpecInfo, BaseSpec, ShellSpec
 from pydra.utils import exc_info_matches
 
+# pydra/engine/tests/test_workflow.py
+
+def test_example_workflow_with_dashboard(plugin, tmpdir):
+    @mark.task
+    def add_two(x):
+        time.sleep(10)
+        return x + 2
+
+    @mark.task
+    def power(a, n=2):
+        time.sleep(5)
+        return a ** n
+
+    def create_workflow():
+        wf = Workflow(name="example", input_spec=["x"])
+        wf.add(add_two(name="add2", x=wf.lzin.x))
+        wf.add(power(name="power", a=wf.add2.lzout.out))
+        wf.set_output([("out", wf.power.lzout.out)])
+        return wf
+
+    wf = create_workflow()
+    wf.inputs.x = 2
+    wf.cache_dir = tmpdir
+
+    with Submitter(plugin=plugin) as sub:
+        result = sub(wf)
+
+    assert result.output.out == 16
+
+    # Check if the workflow data was updated in the dashboard
+    dashboard_data_file = Path.home() / '.pydra_dashboard' / f"{sub.workflow_id}.json"
+    assert dashboard_data_file.exists()
+
+    with dashboard_data_file.open() as f:
+        import json
+        data = json.load(f)
+    
+    assert data["type"] == "workflow"
+    assert data["name"] == "example"
+    assert data["status"] == "completed"
+    assert len(data["tasks"]) == 2
+    assert all(task["status"] in ["completed", "running", "failed"] for task in data["tasks"])
+
 
 def test_wf_no_input_spec():
     with pytest.raises(ValueError, match='Empty "Inputs" spec'):

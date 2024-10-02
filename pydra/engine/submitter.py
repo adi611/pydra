@@ -4,6 +4,9 @@ import asyncio
 import typing as ty
 import pickle
 from uuid import uuid4
+import uuid
+
+from pydra.engine.dashboard_server import dashboard_server
 from .workers import Worker, WORKERS
 from .core import is_workflow
 from .helpers import get_open_loop, load_and_run_async
@@ -47,16 +50,21 @@ class Submitter:
             worker_cls = plugin
         self.worker = worker_cls(**kwargs)
         self.worker.loop = self.loop
+        self.workflow_id = None
 
     def __call__(self, runnable, cache_locations=None, rerun=False, environment=None):
         """Submitter run function."""
+        self.workflow_id = str(uuid.uuid4())
         if cache_locations is not None:
             runnable.cache_locations = cache_locations
-        self.loop.run_until_complete(
-            self.submit_from_call(runnable, rerun, environment)
-        )
-        PersistentCache().clean_up()
-        return runnable.result()
+        try:
+            self.loop.run_until_complete(
+                self.submit_from_call(runnable, rerun, environment)
+            )
+            PersistentCache().clean_up()
+            return runnable.result()
+        finally:
+            self._update_dashboard(runnable, "completed")
 
     async def submit_from_call(self, runnable, rerun, environment):
         """
@@ -72,6 +80,7 @@ class Submitter:
         Once Python 3.10 is the minimum, this should probably be refactored into using
         structural pattern matching.
         """
+        self._update_dashboard(runnable, "started")
         if is_workflow(runnable):  # TODO: env to wf
             # connect and calculate the checksum of the graph before running
             runnable._connect_and_propagate_to_tasks(override_task_caches=True)
@@ -94,6 +103,7 @@ class Submitter:
             # 3
             else:
                 await self.expand_runnable(runnable, wait=True, rerun=rerun)  # TODO
+        self._update_dashboard(runnable, "running")
         return True
 
     async def expand_runnable(self, runnable, wait=False, rerun=False):
@@ -234,6 +244,7 @@ class Submitter:
                             )
                         raise RuntimeError(msg)
             for task in tasks:
+                self._update_dashboard(task, "running")
                 # grab inputs if needed
                 logger.debug(f"Retrieving inputs for {task}")
                 # TODO: add state idx to retrieve values to reduce waiting
@@ -247,6 +258,7 @@ class Submitter:
                 # single task
                 else:
                     task_futures.add(self.worker.run_el(task, rerun=rerun))
+                self._update_dashboard(task, "completed")
             task_futures = await self.worker.fetch_finished(task_futures)
             tasks, follow_err = get_runnable_tasks(graph_copy)
             # updating tasks_errored
@@ -257,6 +269,26 @@ class Submitter:
         for key, val in tasks_follow_errored.items():
             setattr(getattr(wf, key), "_errored", val)
         return wf
+    
+    def _update_dashboard(self, obj, status):
+        if hasattr(dashboard_server, 'update_workflow'):
+            if is_workflow(obj):
+                data = {
+                    "type": "workflow",
+                    "name": obj.name,
+                    "status": status,
+                    "tasks": [{"name": task.name, "status": task.status if hasattr(task, 'status') else status} for task in obj.graph.nodes],
+                }
+            else:  # it's a Task
+                data = {
+                    "type": "task",
+                    "name": obj.name,
+                    "status": status,
+                    "details": obj.get_status_info() if hasattr(obj, "get_status_info") else {},
+                }
+            dashboard_server.update_workflow(self.workflow_id, data)
+        else:
+            print("Warning: dashboard_server does not have update_workflow method")
 
     def __enter__(self):
         return self
