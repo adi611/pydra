@@ -1,3 +1,5 @@
+from pydra.engine.dashboard import Dashboard
+from pydra.utils.messenger import AuditFlag
 import pytest
 import shutil, os, sys
 import time
@@ -4853,7 +4855,37 @@ def test_duplicate_input_on_split_wf(tmpdir):
     res = wf.result()
 
     assert res[0].output.out1 == "test" and res[1].output.out1 == "test"
+    
+def test_example_workflow_with_dashboard(plugin, tmpdir):
+    """Test the example workflow with the dashboard."""
+    @mark.task
+    def add_two(x):
+        # time.sleep(10)
+        return x + 2
 
+    @mark.task
+    def power(a, n=2):
+        # time.sleep(10)
+        return a ** n
+
+    def create_workflow():
+        wf = Workflow(name="example", input_spec=["x"], x=2, audit_flags=AuditFlag.ALL)
+        wf.add(add_two(name="add2", x=wf.lzin.x))
+        wf.add(power(name="power", a=wf.add2.lzout.out))
+        wf.set_output([("out", wf.power.lzout.out)])
+        return wf
+
+    wf = create_workflow()
+    wf.cache_dir = tmpdir
+    dashboard = Dashboard(port=5006)
+
+    with Submitter(plugin=plugin, dashboard=dashboard) as sub:
+        result = sub(wf)
+    # with Submitter(plugin=plugin) as sub:
+    #     result = sub(wf)
+
+    assert result.output.out == 16  # (2 + 2) ** 2 = 16
+    assert wf.output_dir.exists()
 
 @pytest.mark.timeout(40)
 def test_inner_outer_wf_duplicate(tmpdir):

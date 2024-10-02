@@ -267,6 +267,42 @@ class TaskBase:
                 self.__class__.__name__, hash_function([input_hash, splitter_hash])
             )
         return self._checksum
+    
+    @property
+    def status(self):
+        if not hasattr(self, 'output_'):
+            return 'created'
+        if self.errored:
+            return 'failed'
+        if hasattr(self, 'result') and self.result() is not None:
+            return 'completed'
+        return 'running'
+    
+    def get_status_info(self):
+        status = self.status
+        info = {'status': status}
+        
+        if status == 'failed':
+            info['error'] = self._get_error_info()
+        elif status == 'completed':
+            info['result'] = str(self.result())
+        
+        return info
+
+    def _get_error_info(self):
+        try:
+            error_file = self.output_dir / "_error.pklz"
+            if error_file.exists():
+                error_info = load_result(error_file, self.cache_locations)
+                if error_info:
+                    return "".join(error_info)
+                else:
+                    return f"Error info not found in {error_file}"
+            else:
+                return f"Error file not found: {error_file}"
+        except Exception as e:
+            return f"Error retrieving error information: {str(e)}"
+
 
     def checksum_states(self, state_index=None):
         """
@@ -950,6 +986,18 @@ class TaskBase:
             self.inputs._hashes,
         )
 
+    # def get_provenance_details(self):
+    #     return {
+    #         'status': self.status if hasattr(self, 'status') else 'Unknown',
+    #         'checksum': self._checksum,
+    #         'uid': self._uid,
+    #         'cache_dir': str(self.cache_dir),
+    #         'inputs': str(self.inputs),
+    #         'outputs': str(self.output_spec) if hasattr(self, 'output_spec') else 'Unknown',
+    #         'audit_flags': str(self.audit_flags),
+    #         'error': str(self._errored) if self._errored else None
+    #     }
+    
     SUPPORTED_COPY_MODES = FileSet.CopyMode.any
     DEFAULT_COPY_COLLATION = FileSet.CopyCollation.any
 

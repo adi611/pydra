@@ -16,6 +16,7 @@ cov.xml
 *~
 .idea
 *.venv
+venv/
 
 .DS_Store
 
