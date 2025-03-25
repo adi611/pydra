@@ -924,6 +924,15 @@ class PsijWorker(Worker):
         logger.debug("Initialize PsijWorker")
         self.psij = psij
 
+        # Check if the provided subtype is valid
+        valid_subtypes = ["local", "slurm", "flux"]
+        if subtype not in valid_subtypes:
+            raise ValueError(
+                f"Invalid 'subtype' provided. Available options: {', '.join(valid_subtypes)}"
+            )
+
+        self.subtype = subtype
+
     def run_el(self, interface, rerun=False, **kwargs):
         """Run a task."""
         return self.exec_psij(interface, rerun=rerun)
@@ -995,7 +1004,7 @@ class PsijWorker(Worker):
             with open(file_path, "wb") as file:
                 pickle.dump(runnable._run, file)
             func_path = absolute_path / "run_pickled.py"
-            spec = self.make_spec("python", [func_path, file_path])
+            spec = self.make_spec("python", [str(func_path), str(file_path)])
         else:  # it could be tuple that includes pickle files with tasks and inputs
             cache_dir = runnable[-1].cache_dir
             file_path_1 = cache_dir / "taskmain.pkl"
@@ -1009,9 +1018,9 @@ class PsijWorker(Worker):
             spec = self.make_spec(
                 "python",
                 [
-                    func_path,
-                    file_path_1,
-                    file_path_2,
+                    str(func_path),
+                    str(file_path_1),
+                    str(file_path_2),
                 ],
             )
 
@@ -1053,6 +1062,13 @@ class PsijSlurmWorker(PsijWorker):
     plugin_name = f"psij-{subtype}"
 
 
+class PsijFluxWorker(PsijWorker):
+    """A worker to execute tasks using PSI/J using SLURM."""
+
+    subtype = "flux"
+    plugin_name = f"psij-{subtype}"
+
+
 WORKERS = {
     w.plugin_name: w
     for w in (
@@ -1063,5 +1079,6 @@ WORKERS = {
         SGEWorker,
         PsijLocalWorker,
         PsijSlurmWorker,
+        PsijFluxWorker,
     )
 }
